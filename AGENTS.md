@@ -85,7 +85,7 @@ Ningún paquete de npm en tiempo de ejecución. Las importaciones relativas llev
 - `main`: lo publicado en el Marketplace. Solo recibe merges desde `develop`.
 - `develop`: integración. Las `feature/<tema>` salen de `develop` y vuelven a `develop`.
 - `plan-uml-original`: copia de referencia del repo original (justuskarlsson/plan-uml,
-  remoto `upstream`). No se desarrolla ni se mergea ahí; se compara contra ella para
+  remoto `plan-uml-original`). No se desarrolla ni se mergea ahí; se compara contra ella para
   traer cambios del original a una `feature/*`.
 - Publicar: subir `version` en `package.json` y `CHANGELOG.md` en `develop`, mergear a
   `main` y crear el tag `vX.Y.Z` sobre `main`. El workflow `release.yml` verifica, empaqueta,
