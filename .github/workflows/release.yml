@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check tag is on main and matches package.json
+        shell: bash
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME does not point to a commit on main."
+            exit 1
+          fi
+          if [ ! -f package.json ]; then
+            echo "::error::No package.json, nothing to publish."
+            exit 1
+          fi
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version."
+            exit 1
+          fi
+
+      - uses: ./.github/actions/setup
+
+      # package runs verify first, then the production build and the .vsix.
+      - run: pnpm run package
+
+      - id: vsix
+        shell: bash
+        run: |
+          mapfile -t files < <(find . -name '*.vsix' -not -path './node_modules/*')
+          if [ "${#files[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one .vsix, found ${#files[@]}: ${files[*]}"
+            exit 1
+          fi
+          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
+
+      # Idempotent so a failed Marketplace publish can be re-run.
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VSIX: ${{ steps.vsix.outputs.path }}
+        shell: bash
+        run: |
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$VSIX" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$VSIX" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+          fi
+
+      - name: Publish to the Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          VSIX: ${{ steps.vsix.outputs.path }}
+        shell: bash
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::Secret VSCE_PAT is not set."
+            exit 1
+          fi
+          # vsce comes from the lockfile so the token never meets an unpinned package.
+          if ! pnpm exec vsce --version > /dev/null 2>&1; then
+            echo "::error::@vscode/vsce must be a devDependency pinned in pnpm-lock.yaml."
+            exit 1
+          fi
+          pnpm exec vsce publish --packagePath "$VSIX"

@@ -1,0 +1,34 @@
+name: Setup toolchain
+description: Node, pnpm, Java and dependencies for building and testing the extension.
+
+runs:
+  using: composite
+  steps:
+    # pnpm/action-setup fails if a version is passed while package.json also pins
+    # packageManager, so only pass one when the manifest does not.
+    - id: pnpm-version
+      shell: bash
+      run: |
+        if node -e "process.exit(require('./package.json').packageManager ? 0 : 1)"; then
+          echo "version=" >> "$GITHUB_OUTPUT"
+        else
+          echo "version=11" >> "$GITHUB_OUTPUT"
+        fi
+
+    - uses: pnpm/action-setup@v4
+      with:
+        version: ${{ steps.pnpm-version.outputs.version }}
+
+    - uses: actions/setup-node@v5
+      with:
+        node-version: 24
+        cache: pnpm
+
+    # PlantUML tests run the real jar.
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 21
+
+    - shell: bash
+      run: pnpm install --frozen-lockfile
