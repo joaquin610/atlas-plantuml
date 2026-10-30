@@ -80,6 +80,15 @@ Ningún paquete de npm en tiempo de ejecución. Las importaciones relativas llev
   falta la herramienta; en el CI no faltan.
 - No uses diagramas de proyectos reales como fixtures: solo diagramas sintéticos.
 
+## Jar de PlantUML
+
+- El jar no se commitea. `node scripts/fetch-plantuml-jar.mjs` baja la versión fijada en
+  `scripts/plantuml-jar.json` y verifica su SHA-256; si el archivo ya está y coincide, no
+  hace nada. El CI lo corre antes de `verify`.
+- Para cambiar de versión: actualizá `version`, `url` y `sha256` en el mismo commit, y
+  `THIRD_PARTY_NOTICES.md`. El checksum sale de la Release oficial de plantuml/plantuml.
+- `path` tiene que ser donde el código busca el jar, y `.vscodeignore` no lo puede excluir.
+
 ## Ramas y publicación
 
 - `main`: lo publicado en el Marketplace. Solo recibe merges desde `develop`.
