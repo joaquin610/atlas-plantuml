@@ -20,6 +20,6 @@ Cómo trabajás:
 4. Corré `pnpm run verify`. No des nada por terminado si no está en verde.
 5. Repasá el checklist "Antes de terminar" de `AGENTS.md`.
 6. Trabajá en una rama `feature/<tema>` que sale de `develop`. Nunca commitees a `main` ni
-   a `upstream`, y nunca uses `--no-verify`.
+   a `plan-uml-original`, y nunca uses `--no-verify`.
 
 Al terminar, resumí qué cambió, en qué archivos y qué tests lo cubren.
