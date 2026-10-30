@@ -88,8 +88,10 @@ Ningún paquete de npm en tiempo de ejecución. Las importaciones relativas llev
   desarrolla ahí; se compara contra ella para traer cambios del original a una `feature/*`.
 - Publicar: subir `version` en `package.json` y `CHANGELOG.md` en `develop`, mergear a
   `main` y crear el tag `vX.Y.Z` sobre `main`. El workflow `release.yml` verifica, empaqueta,
-  crea la Release con el `.vsix` y publica con el secreto `VSCE_PAT`. Nunca publiques a mano.
-- El token del Marketplace vive solo como secreto del repo. Nunca en archivos, commits ni chats.
+  crea la Release con el `.vsix` y publica con Trusted Publishing (OIDC, sin token). Nunca
+  publiques a mano.
+- Si hiciera falta un token (`VSCE_PAT`), vive solo como secreto del repo. Nunca en
+  archivos, commits ni chats.
 
 ## Antes de terminar
 

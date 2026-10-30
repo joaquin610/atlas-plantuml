@@ -5,17 +5,19 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      vsix: ${{ steps.vsix.outputs.name }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
 
@@ -50,13 +52,31 @@ jobs:
             echo "::error::Expected exactly one .vsix, found ${#files[@]}: ${files[*]}"
             exit 1
           fi
-          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
+          mkdir -p dist-vsix
+          cp "${files[0]}" dist-vsix/
+          echo "name=$(basename "${files[0]}")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: vsix
+          path: dist-vsix/
+          if-no-files-found: error
+
+  github-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: vsix
 
       # Idempotent so a failed Marketplace publish can be re-run.
-      - name: GitHub Release
-        env:
+      - env:
           GH_TOKEN: ${{ github.token }}
-          VSIX: ${{ steps.vsix.outputs.path }}
+          GH_REPO: ${{ github.repository }}
+          VSIX: ${{ needs.build.outputs.vsix }}
         shell: bash
         run: |
           if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
@@ -65,19 +85,54 @@ jobs:
             gh release create "$GITHUB_REF_NAME" "$VSIX" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
           fi
 
-      - name: Publish to the Marketplace
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-          VSIX: ${{ steps.vsix.outputs.path }}
+  # Only this job can mint a Marketplace credential, and it runs no project scripts.
+  publish:
+    needs: [build, github-release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: vsix
+          path: dist-vsix
+
+      - id: pnpm-version
         shell: bash
         run: |
-          if [ -z "$VSCE_PAT" ]; then
-            echo "::error::Secret VSCE_PAT is not set."
-            exit 1
+          if node -e "process.exit(require('./package.json').packageManager ? 0 : 1)"; then
+            echo "version=" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=11" >> "$GITHUB_OUTPUT"
           fi
-          # vsce comes from the lockfile so the token never meets an unpinned package.
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+
+      # vsce comes from the lockfile so the credential never meets an unpinned package.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      # Trusted Publishing (OIDC) is the default; VSCE_PAT is only a fallback, since
+      # global Azure DevOps PATs are retired on 2026-12-01.
+      - env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          VSIX: dist-vsix/${{ needs.build.outputs.vsix }}
+        shell: bash
+        run: |
           if ! pnpm exec vsce --version > /dev/null 2>&1; then
             echo "::error::@vscode/vsce must be a devDependency pinned in pnpm-lock.yaml."
             exit 1
           fi
-          pnpm exec vsce publish --packagePath "$VSIX"
+          if [ -n "$VSCE_PAT" ]; then
+            pnpm exec vsce publish --packagePath "$VSIX"
+          else
+            pnpm exec vsce publish --oidc --packagePath "$VSIX"
+          fi
