@@ -1,14 +1,10 @@
 import * as vscode from 'vscode';
-import { describe } from './exportImage.ts';
 import { COMMANDS, VIEW_TYPES } from './ids.ts';
 import type { PreviewManager } from './previewManager.ts';
 
 const plural = (count: number) => (count === 1 ? '' : 's');
 
-export function registerCommands(
-  extensionUri: vscode.Uri,
-  previews: PreviewManager,
-): vscode.Disposable[] {
+export function registerCommands(previews: PreviewManager): vscode.Disposable[] {
   return [
     vscode.commands.registerCommand(COMMANDS.openPreview, async () => {
       const editor = vscode.window.activeTextEditor;
@@ -34,41 +30,5 @@ export function registerCommands(
         count > 0 ? `Reloaded ${count} preview${plural(count)}` : 'No active previews to reload',
       );
     }),
-    vscode.commands.registerCommand(COMMANDS.writeCursorRules, () =>
-      writeCursorRules(extensionUri),
-    ),
   ];
-}
-
-/** Copies the bundled Cursor rules to .cursor/rules, or opens them when that is not possible. */
-async function writeCursorRules(extensionUri: vscode.Uri): Promise<void> {
-  try {
-    const rules = await vscode.workspace.fs.readFile(
-      vscode.Uri.joinPath(extensionUri, 'resources', 'plan-uml.mdc'),
-    );
-    const folder = vscode.workspace.workspaceFolders?.[0];
-    if (folder) {
-      const dir = vscode.Uri.joinPath(folder.uri, '.cursor', 'rules');
-      try {
-        await vscode.workspace.fs.createDirectory(dir);
-        await vscode.workspace.fs.writeFile(vscode.Uri.joinPath(dir, 'plan-uml.mdc'), rules);
-        vscode.window.showInformationMessage('Cursor rules written to .cursor/rules/plan-uml.mdc');
-        return;
-      } catch (error) {
-        console.log('[Atlas PlantUML] Could not write cursor rules file:', error);
-      }
-    }
-    const doc = await vscode.workspace.openTextDocument({
-      content: new TextDecoder().decode(rules),
-      language: 'markdown',
-    });
-    await vscode.window.showTextDocument(doc);
-    vscode.window.showInformationMessage(
-      folder
-        ? 'Could not write to .cursor/rules/plan-uml.mdc. File opened in editor - please copy it manually to .cursor/rules/plan-uml.mdc'
-        : 'No workspace folder found. File opened in editor - please copy it manually to .cursor/rules/plan-uml.mdc in your workspace',
-    );
-  } catch (error) {
-    vscode.window.showErrorMessage(`Failed to write cursor rules: ${describe(error)}`);
-  }
 }

@@ -8,7 +8,6 @@
 !icon.png
 !language-configuration.json
 !syntaxes/**
-!resources/**
 !media/preview.html
 !media/preview.css
 !out/extension.cjs
