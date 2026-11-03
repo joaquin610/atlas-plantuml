@@ -5,3 +5,4 @@ out/
 .DS_Store
 *.jar
 *.jar.partial
+test/webview/page/

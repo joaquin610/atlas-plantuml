@@ -1,0 +1,62 @@
+{
+  "units": [
+    {
+      "first": 4,
+      "last": 12
+    },
+    {
+      "first": 14,
+      "last": 17
+    },
+    {
+      "first": 19,
+      "last": 23
+    },
+    {
+      "first": 25,
+      "last": 27
+    },
+    {
+      "first": 29,
+      "last": 33
+    },
+    {
+      "first": 35,
+      "last": 37
+    },
+    {
+      "first": 39,
+      "last": 39
+    },
+    {
+      "first": 40,
+      "last": 40
+    },
+    {
+      "first": 41,
+      "last": 41
+    },
+    {
+      "first": 42,
+      "last": 42
+    }
+  ],
+  "directionLines": [],
+  "reversedTb": "@startuml\n' Synthetic diagram used by the tests\nskinparam classAttributeIconSize 0\n\nclass Address\n\nclass Shipment\n\nclass Warehouse\n\nclass Receipt\n\ninterface PaymentGateway {\n  +charge(order: Order): Receipt\n}\n\nenum OrderStatus {\n  DRAFT\n  PAID\n  SHIPPED\n}\n\nclass OrderLine {\n  +quantity: int\n}\n' Orders and their lines\nclass Order {\n  +id: OrderId\n  +total(): Money\n}\nclass Customer {\n  +id: CustomerId\n  +email: String\n}\npackage Catalog {\n  class Product {\n    +id: ProductId\n    +name: String\n  }\n  class Category {\n    +name: String\n  }\n}\n\nCustomer \"1\" -- \"*\" Order\nOrder *-- \"*\" OrderLine\nOrderLine --> Product\nProduct --> Category\nOrder --> OrderStatus\nPaymentGateway ..> Order\nPaymentGateway ..> Receipt\nShipment --> Order\nShipment --> Warehouse\nShipment --> Address\nCustomer --> Address\nWarehouse --> Product\nReceipt --> Customer\n@enduml\n",
+  "identityLr": "@startuml\n' Synthetic diagram used by the tests\nskinparam classAttributeIconSize 0\n\npackage Catalog {\n  class Product {\n    +id: ProductId\n    +name: String\n  }\n  class Category {\n    +name: String\n  }\n}\n\nclass Customer {\n  +id: CustomerId\n  +email: String\n}\n\n' Orders and their lines\nclass Order {\n  +id: OrderId\n  +total(): Money\n}\n\nclass OrderLine {\n  +quantity: int\n}\n\nenum OrderStatus {\n  DRAFT\n  PAID\n  SHIPPED\n}\n\ninterface PaymentGateway {\n  +charge(order: Order): Receipt\n}\n\nclass Receipt\nclass Warehouse\nclass Shipment\nclass Address\n\nCustomer \"1\" -- \"*\" Order\nOrder *-- \"*\" OrderLine\nOrderLine --> Product\nProduct --> Category\nOrder --> OrderStatus\nPaymentGateway ..> Order\nPaymentGateway ..> Receipt\nShipment --> Order\nShipment --> Warehouse\nShipment --> Address\nCustomer --> Address\nWarehouse --> Product\nReceipt --> Customer\nleft to right direction\n@enduml\n",
+  "crlfLr": "@startuml\r\n' Synthetic diagram used by the tests\r\nskinparam classAttributeIconSize 0\r\n\r\npackage Catalog {\r\n  class Product {\r\n    +id: ProductId\r\n    +name: String\r\n  }\r\n  class Category {\r\n    +name: String\r\n  }\r\n}\r\n\r\nclass Customer {\r\n  +id: CustomerId\r\n  +email: String\r\n}\r\n\r\n' Orders and their lines\r\nclass Order {\r\n  +id: OrderId\r\n  +total(): Money\r\n}\r\n\r\nclass OrderLine {\r\n  +quantity: int\r\n}\r\n\r\nenum OrderStatus {\r\n  DRAFT\r\n  PAID\r\n  SHIPPED\r\n}\r\n\r\ninterface PaymentGateway {\r\n  +charge(order: Order): Receipt\r\n}\r\n\r\nclass Receipt\r\nclass Warehouse\r\nclass Shipment\r\nclass Address\r\n\r\nCustomer \"1\" -- \"*\" Order\r\nOrder *-- \"*\" OrderLine\r\nOrderLine --> Product\r\nProduct --> Category\r\nOrder --> OrderStatus\r\nPaymentGateway ..> Order\r\nPaymentGateway ..> Receipt\r\nShipment --> Order\r\nShipment --> Warehouse\r\nShipment --> Address\r\nCustomer --> Address\r\nWarehouse --> Product\r\nReceipt --> Customer\r\nleft to right direction\r\n@enduml\r\n",
+  "shopScore": {
+    "crossings": 1,
+    "width": 425,
+    "height": 920,
+    "entities": 11
+  },
+  "brokenScore": null,
+  "darkShop": "0c248cef8629e47fc1c8cd9b1a1a723d248e246f68627dcbd78b4608bcac0ceb",
+  "errors": [
+    "There are not enough top-level declarations to rearrange.",
+    "The file needs @startuml and @enduml.",
+    "Preprocessor directives (line 2) are not supported by Arrange.",
+    "Unbalanced braces in the declaration at line 2."
+  ]
+}
