@@ -8,7 +8,6 @@ export const COMMANDS = {
   openPreview: 'atlasPlantuml.openPreview',
   closePreview: 'atlasPlantuml.closePreview',
   reloadWebviews: 'atlasPlantuml.reloadWebviews',
-  writeCursorRules: 'atlasPlantuml.writeCursorRules',
 } as const;
 
 export const STATE_KEYS = {
