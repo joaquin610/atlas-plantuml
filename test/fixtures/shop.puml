@@ -1,0 +1,58 @@
+@startuml
+' Synthetic diagram used by the tests
+skinparam classAttributeIconSize 0
+
+package Catalog {
+  class Product {
+    +id: ProductId
+    +name: String
+  }
+  class Category {
+    +name: String
+  }
+}
+
+class Customer {
+  +id: CustomerId
+  +email: String
+}
+
+' Orders and their lines
+class Order {
+  +id: OrderId
+  +total(): Money
+}
+
+class OrderLine {
+  +quantity: int
+}
+
+enum OrderStatus {
+  DRAFT
+  PAID
+  SHIPPED
+}
+
+interface PaymentGateway {
+  +charge(order: Order): Receipt
+}
+
+class Receipt
+class Warehouse
+class Shipment
+class Address
+
+Customer "1" -- "*" Order
+Order *-- "*" OrderLine
+OrderLine --> Product
+Product --> Category
+Order --> OrderStatus
+PaymentGateway ..> Order
+PaymentGateway ..> Receipt
+Shipment --> Order
+Shipment --> Warehouse
+Shipment --> Address
+Customer --> Address
+Warehouse --> Product
+Receipt --> Customer
+@enduml

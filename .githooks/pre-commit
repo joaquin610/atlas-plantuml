@@ -1,0 +1,3 @@
+#!/bin/sh
+# Runs typecheck, lint, build and every test before each commit (see AGENTS.md).
+pnpm run verify

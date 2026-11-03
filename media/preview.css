@@ -1,0 +1,544 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+    font-family: var(--vscode-font-family);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Toolbar (local patch): grouped controls, secondary buttons, accent only when active */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background-color: var(--vscode-titleBar-activeBackground);
+    border-bottom: 1px solid var(--vscode-panel-border);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    font-size: 12px;
+}
+
+.toolbar button {
+    height: 24px;
+    padding: 0 10px;
+    background-color: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--vscode-font-family);
+    white-space: nowrap;
+}
+
+.toolbar button:hover:not(:disabled) {
+    background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.toolbar button:active:not(:disabled) {
+    opacity: 0.8;
+}
+
+.toolbar button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.toolbar button.active {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+}
+
+.toolbar button.active:hover:not(:disabled) {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+.toolbar .separator {
+    width: 1px;
+    height: 18px;
+    background-color: var(--vscode-panel-border);
+    margin: 0 4px;
+}
+
+.toolbar .spacer {
+    flex: 1;
+}
+
+/* Joined buttons: [-][100%][+] */
+.toolbar .group {
+    display: inline-flex;
+    align-items: center;
+}
+
+.toolbar .group > * {
+    border-radius: 0;
+}
+
+.toolbar .group > :first-child {
+    border-radius: 4px 0 0 4px;
+}
+
+.toolbar .group > :last-child {
+    border-radius: 0 4px 4px 0;
+}
+
+.toolbar .group > * + * {
+    margin-left: 1px;
+}
+
+.toolbar .zoom-level {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    min-width: 48px;
+    background-color: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
+    font-variant-numeric: tabular-nums;
+}
+
+.toolbar .icon-button {
+    width: 26px;
+    padding: 0;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.toolbar .label {
+    opacity: 0.8;
+}
+
+.content-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    margin-right: 300px;
+    /* Account for journey sidebar */
+}
+
+.preview-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--vscode-editor-background);
+    display: none;
+}
+
+.preview-container.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.svg-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+}
+
+.svg-wrapper svg {
+    display: block;
+}
+
+/* Smooth pan/zoom (local patch). While the view moves, a pre-rendered bitmap of the
+   diagram replaces the SVG, so the GPU only scales an image; the sharp SVG returns at rest. */
+body.dragging .svg-wrapper svg,
+body.interacting .svg-wrapper svg {
+    pointer-events: none;
+}
+
+body.interacting .svg-wrapper {
+    will-change: transform;
+}
+
+/* Bitmaps stay rendered under the SVG so they are already on the GPU when needed */
+.svg-wrapper > svg {
+    position: relative;
+    z-index: 2;
+}
+
+#zoomSnapshot,
+#zoomDetail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+#zoomSnapshot {
+    z-index: 0;
+}
+
+#zoomDetail {
+    z-index: 1;
+}
+
+body.interacting.snapshot-ready .svg-wrapper > svg {
+    visibility: hidden;
+}
+
+.source-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 20px;
+    display: none;
+    background-color: var(--vscode-editor-background);
+}
+
+.source-container.active {
+    display: block;
+}
+
+.source-code {
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+    line-height: 1.5;
+    white-space: pre;
+    color: var(--vscode-editor-foreground);
+    margin: 0;
+}
+
+g.entity {
+    cursor: pointer;
+}
+
+g.entity:hover {
+    opacity: 0.8;
+}
+
+g.link {
+    cursor: pointer;
+}
+
+g.link:hover {
+    opacity: 0.8;
+}
+
+.panning {
+    cursor: move;
+}
+
+.panning g.entity,
+.panning g.link {
+    cursor: move;
+}
+
+/* Hidden journey sidebar (local patch) */
+body.journeys-hidden .journey-sidebar {
+    display: none;
+}
+
+body.journeys-hidden .content-area {
+    margin-right: 0;
+}
+
+.toolbar select {
+    height: 24px;
+    padding: 0 6px;
+    background-color: var(--vscode-dropdown-background);
+    color: var(--vscode-dropdown-foreground);
+    border: 1px solid var(--vscode-dropdown-border);
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: var(--vscode-font-family);
+    cursor: pointer;
+}
+
+/* Dark mode (local patch): the extension recolors the SVG; only the frame is styled here */
+body.diagram-dark .preview-container {
+    background-color: #1e1e1e;
+}
+
+/* Arrange preview bar (local patch): full-width second row of the toolbar */
+.arrange-bar {
+    display: none;
+    flex-basis: 100%;
+    align-items: center;
+    gap: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--vscode-panel-border);
+}
+
+body.arranging .arrange-bar {
+    display: flex;
+}
+
+/* Search box (local patch): input, match counter and previous/next arrows in one field */
+.search-box {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 2px 0 8px;
+    background-color: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+    border-radius: 4px;
+}
+
+.search-box:focus-within {
+    border-color: var(--vscode-focusBorder);
+}
+
+.search-box input {
+    width: 160px;
+    padding: 0;
+    background: transparent;
+    color: var(--vscode-input-foreground);
+    border: none;
+    outline: none;
+    font-size: 12px;
+    font-family: var(--vscode-font-family);
+}
+
+.search-box #searchCount {
+    min-width: 34px;
+    padding: 0 4px;
+    text-align: right;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+}
+
+.toolbar .search-box button {
+    width: 22px;
+    height: 20px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    color: var(--vscode-input-foreground);
+    font-size: 13px;
+    line-height: 1;
+}
+
+.toolbar .search-box button:hover:not(:disabled) {
+    background-color: var(--vscode-toolbar-hoverBackground, var(--vscode-button-secondaryHoverBackground));
+}
+
+#searchHighlight {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    border-style: solid;
+    border-color: #f59e0b;
+    border-radius: 6px;
+    background-color: rgba(245, 158, 11, 0.10);
+}
+
+/* Minimap (local patch) */
+#minimap {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 10;
+    display: none;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    background-color: var(--vscode-editor-background);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+body.snapshot-ready:not(.minimap-hidden) #minimap {
+    display: block;
+}
+
+#minimapCanvas {
+    display: block;
+}
+
+#minimapView {
+    position: absolute;
+    border: 2px solid #f59e0b;
+    background-color: rgba(245, 158, 11, 0.12);
+    pointer-events: none;
+}
+
+/* Journey system styles */
+.journey-sidebar {
+    position: fixed;
+    right: 0;
+    top: 41px;
+    /* Below toolbar */
+    bottom: 0;
+    width: 300px;
+    background-color: var(--vscode-sideBar-background);
+    border-left: 1px solid var(--vscode-panel-border);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.journey-header {
+    padding: 12px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+    font-weight: bold;
+    font-size: 13px;
+    background-color: var(--vscode-sideBarTitle-background);
+    color: var(--vscode-sideBarTitle-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.journey-header-title {
+    flex: 1;
+}
+
+.journey-header-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.journey-header-button {
+    padding: 2px 8px;
+    background-color: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
+    border: 1px solid var(--vscode-button-border);
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--vscode-font-family);
+}
+
+.journey-header-button:hover {
+    background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.journey-header-button:active {
+    opacity: 0.8;
+}
+
+.journey-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.journey-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px;
+    margin-bottom: 4px;
+    background-color: var(--vscode-list-activeSelectionBackground);
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 3px;
+    font-size: 12px;
+    word-wrap: break-word;
+}
+
+.journey-text {
+    flex: 1;
+    padding-right: 8px;
+    color: var(--vscode-list-activeSelectionForeground);
+}
+
+.journey-delete {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    background-color: var(--vscode-button-secondaryBackground);
+    color: var(--vscode-button-secondaryForeground);
+    border: 1px solid var(--vscode-button-border);
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+}
+
+.journey-delete:hover {
+    background-color: #ff4444;
+    color: white;
+}
+
+.input-container {
+    position: fixed;
+    top: 41px;
+    /* Below toolbar */
+    right: 300px;
+    width: 300px;
+    padding: 12px;
+    background-color: var(--vscode-input-background);
+    border-left: 1px solid var(--vscode-panel-border);
+    border-bottom: 1px solid var(--vscode-panel-border);
+    z-index: 1001;
+    display: none;
+}
+
+.input-container.visible {
+    display: block;
+}
+
+.input-container textarea {
+    width: 100%;
+    padding: 6px;
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 2px;
+    font-family: var(--vscode-font-family);
+    font-size: 12px;
+    resize: vertical;
+}
+
+.input-container textarea:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+}
+
+g.entity.selected,
+g.cluster.selected {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 8px var(--vscode-focusBorder)) drop-shadow(0 0 4px var(--vscode-focusBorder));
+    stroke: var(--vscode-focusBorder);
+    stroke-width: 3px;
+}
+
+g.entity.selected *,
+g.cluster.selected * {
+    stroke: var(--vscode-focusBorder);
+    stroke-width: 2px;
+}
+
+g.link.selected {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 8px var(--vscode-focusBorder)) drop-shadow(0 0 4px var(--vscode-focusBorder));
+}
+
+g.link.selected path {
+    stroke: var(--vscode-focusBorder);
+    stroke-width: 3px;
+}
+
+g.link.selected polygon {
+    fill: var(--vscode-focusBorder);
+}
+
+g.selected {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 8px var(--vscode-focusBorder)) drop-shadow(0 0 4px var(--vscode-focusBorder));
+}
+
+.rectangle-selection {
+    position: absolute;
+    border: 2px dashed var(--vscode-focusBorder);
+    background-color: rgba(0, 123, 255, 0.1);
+    pointer-events: none;
+    z-index: 999;
+}
