@@ -3,7 +3,8 @@
 ## 0.1.0
 
 Renamed to Atlas PlantUML (publisher `JoaquinBanchero`). Command, editor and state IDs now
-use the `atlasPlantuml.` prefix, so the previous build must be uninstalled.
+use the `atlasPlantuml.` prefix, so the previous build must be uninstalled. The "Write
+plan-uml cursor rules" command is removed.
 
 Rewritten in TypeScript with automated tests. Features are the same as 0.0.19, with these
 changes:

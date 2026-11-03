@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.registerCustomEditorProvider(VIEW_TYPES.split, {
       resolveCustomTextEditor: (document, panel) => openSplit(document, panel, VIEW_TYPES.preview),
     }),
-    ...registerCommands(context.extensionUri, previews),
+    ...registerCommands(previews),
   );
 }
 
