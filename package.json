@@ -4,7 +4,6 @@
   "description": "Interactive PlantUML preview with dark mode, layout selector, search, minimap, Arrange and bundled PlantUML. Based on Plan UML by Justus Karlsson (MIT).",
   "version": "0.1.0",
   "publisher": "JoaquinBanchero",
-  "private": true,
   "license": "MIT",
   "type": "module",
   "repository": {
