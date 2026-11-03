@@ -1,0 +1,137 @@
+{
+  "name": "atlas-plantuml",
+  "displayName": "Atlas PlantUML",
+  "description": "Interactive PlantUML preview with dark mode, layout selector, search, minimap, Arrange and bundled PlantUML. Based on Plan UML by Justus Karlsson (MIT).",
+  "version": "0.1.0",
+  "publisher": "JoaquinBanchero",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joaquin610/atlas-plantuml.git"
+  },
+  "homepage": "https://github.com/joaquin610/atlas-plantuml#readme",
+  "bugs": {
+    "url": "https://github.com/joaquin610/atlas-plantuml/issues"
+  },
+  "keywords": [
+    "plantuml",
+    "puml",
+    "uml",
+    "diagram",
+    "preview",
+    "visualization",
+    "design"
+  ],
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "main": "./out/extension.cjs",
+  "icon": "icon.png",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:watch": "node scripts/build.mjs --watch",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.webview.json && tsc -p tsconfig.test.json",
+    "test": "node --test --test-reporter=spec \"test/**/*.test.ts\"",
+    "check:write": "biome check --write .",
+    "check:verify": "biome ci .",
+    "verify": "pnpm run typecheck && pnpm run check:verify && pnpm run build && pnpm run test",
+    "vscode:prepublish": "pnpm run verify && node scripts/build.mjs --production",
+    "package": "vsce package --no-dependencies",
+    "prepare": "node scripts/install-hooks.mjs"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "plantuml",
+        "aliases": [
+          "PlantUML",
+          "puml"
+        ],
+        "extensions": [
+          ".puml",
+          ".pu",
+          ".plantuml",
+          ".iuml",
+          ".wsd"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "atlasPlantuml.openPreview",
+        "title": "Open Atlas PlantUML Preview",
+        "category": "Atlas PlantUML"
+      },
+      {
+        "command": "atlasPlantuml.closePreview",
+        "title": "Close All Previews",
+        "category": "Atlas PlantUML"
+      },
+      {
+        "command": "atlasPlantuml.reloadWebviews",
+        "title": "Reload All Previews",
+        "category": "Atlas PlantUML"
+      },
+      {
+        "command": "atlasPlantuml.writeCursorRules",
+        "title": "Write plan-uml cursor rules",
+        "category": "Atlas PlantUML"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "atlasPlantuml.preview",
+        "displayName": "Atlas PlantUML Preview",
+        "selector": [
+          {
+            "filenamePattern": "*.puml"
+          }
+        ],
+        "priority": "default"
+      },
+      {
+        "viewType": "atlasPlantuml.split",
+        "displayName": "Atlas PlantUML Preview + Source",
+        "selector": [
+          {
+            "filenamePattern": "*.puml"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "plantuml",
+        "scopeName": "source.wsd",
+        "path": "./syntaxes/plantuml.tmLanguage"
+      },
+      {
+        "scopeName": "markdown.plantuml.codeblock",
+        "path": "./syntaxes/codeblock.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.plantuml": "plantuml"
+        }
+      }
+    ]
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.3",
+    "@types/node": "^22.20.5",
+    "@types/vscode": "1.74.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  },
+  "packageManager": "pnpm@12.4.2"
+}

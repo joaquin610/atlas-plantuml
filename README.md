@@ -31,7 +31,7 @@ affiliated with or endorsed by the original author.
 
 1. Install Atlas PlantUML from the Visual Studio Code Marketplace.
 2. Open a `.puml` file.
-3. Run **TODO: command title** from the Command Palette, or click the preview icon in the
+3. Run **Atlas PlantUML: Open Atlas PlantUML Preview** from the Command Palette, or click the preview icon in the
    editor title bar.
 
 ## Settings

@@ -1,0 +1,16 @@
+**
+!package.json
+!README.md
+!CHANGELOG.md
+!LICENSE
+!THIRD_PARTY_NOTICES.md
+!third-party/**
+!icon.png
+!language-configuration.json
+!syntaxes/**
+!resources/**
+!media/preview.html
+!media/preview.css
+!out/extension.cjs
+!out/webview.js
+!plantuml-1.2025.10.jar

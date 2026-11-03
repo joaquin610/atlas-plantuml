@@ -30,6 +30,10 @@ runs:
         distribution: temurin
         java-version: 21
 
+    # The Default layout needs Graphviz (dot); the jar does not ship it.
+    - shell: bash
+      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends graphviz
+
     - shell: bash
       run: pnpm install --frozen-lockfile
 
